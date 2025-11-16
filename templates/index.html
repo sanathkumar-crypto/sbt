@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBT Eligibility Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 1em;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .vital-entry {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .vital-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .vital-entry-header h3 {
+            font-size: 1em;
+            color: #667eea;
+        }
+        
+        .remove-vital {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .remove-vital:hover {
+            background: #c82333;
+        }
+        
+        .add-vital {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        
+        .add-vital:hover {
+            background: #218838;
+        }
+        
+        .medication-entry {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .medication-entry input {
+            flex: 1;
+        }
+        
+        .remove-med {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .add-med {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        
+        .output-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            display: none;
+        }
+        
+        .output-section.show {
+            display: block;
+        }
+        
+        .output-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .output-json {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            margin-top: 20px;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3c3;
+            margin-top: 20px;
+        }
+        
+        .no-result-message {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 SBT Eligibility Checker</h1>
+            <p>Spontaneous Breathing Trial Eligibility Assessment Tool</p>
+        </div>
+        
+        <div class="content">
+            <form id="sbtForm">
+                <!-- Patient Information -->
+                <div class="form-section">
+                    <h2>Patient Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cpmrn">CPMRN *</label>
+                            <input type="text" id="cpmrn" name="cpmrn" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bedNo">Bed Number *</label>
+                            <input type="text" id="bedNo" name="bedNo" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">First Name *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hospitalName">Hospital Name *</label>
+                            <input type="text" id="hospitalName" name="hospitalName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unitName">Unit Name *</label>
+                            <input type="text" id="unitName" name="unitName" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Latest Vital -->
+                <div class="form-section">
+                    <h2>Latest Vital Record</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="latestVitalTimestamp">Timestamp *</label>
+                            <input type="datetime-local" id="latestVitalTimestamp" name="latestVitalTimestamp" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="daysFiO2">daysFiO2 *</label>
+                            <input type="number" id="daysFiO2" name="daysFiO2" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="daysVentPEEP">daysVentPEEP *</label>
+                            <input type="number" id="daysVentPEEP" name="daysVentPEEP" step="0.1" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vitals Since 12am -->
+                <div class="form-section">
+                    <h2>Vitals Since 12am Today</h2>
+                    <p style="color: #666; margin-bottom: 15px;">Add vital records that occurred since 12am today. Each should have daysVentBreathSequence and daysHR.</p>
+                    <div id="vitalsContainer"></div>
+                    <button type="button" class="add-vital" onclick="addVitalEntry()">+ Add Vital Record</button>
+                </div>
+                
+                <!-- Active Medications -->
+                <div class="form-section">
+                    <h2>Active Medications</h2>
+                    <p style="color: #666; margin-bottom: 15px;">List all active medication names. Leave empty if none.</p>
+                    <div id="medicationsContainer"></div>
+                    <button type="button" class="add-med" onclick="addMedicationEntry()">+ Add Medication</button>
+                </div>
+                
+                <button type="submit">Check Eligibility</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Processing...</p>
+            </div>
+            
+            <div class="output-section" id="outputSection">
+                <h2>Result:</h2>
+                <div id="outputContent"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let vitalCount = 0;
+        let medCount = 0;
+        
+        function addVitalEntry() {
+            const container = document.getElementById('vitalsContainer');
+            const entry = document.createElement('div');
+            entry.className = 'vital-entry';
+            entry.id = `vital-${vitalCount}`;
+            entry.innerHTML = `
+                <div class="vital-entry-header">
+                    <h3>Vital Record ${vitalCount + 1}</h3>
+                    <button type="button" class="remove-vital" onclick="removeVitalEntry(${vitalCount})">Remove</button>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Timestamp *</label>
+                        <input type="datetime-local" name="vital_timestamp_${vitalCount}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>daysVentBreathSequence</label>
+                        <input type="text" name="vital_breath_${vitalCount}" placeholder="e.g., csv">
+                    </div>
+                    <div class="form-group">
+                        <label>daysHR</label>
+                        <input type="number" name="vital_hr_${vitalCount}" step="0.1" placeholder="Heart rate">
+                    </div>
+                </div>
+            `;
+            container.appendChild(entry);
+            vitalCount++;
+        }
+        
+        function removeVitalEntry(id) {
+            const entry = document.getElementById(`vital-${id}`);
+            if (entry) {
+                entry.remove();
+            }
+        }
+        
+        function addMedicationEntry() {
+            const container = document.getElementById('medicationsContainer');
+            const entry = document.createElement('div');
+            entry.className = 'medication-entry';
+            entry.id = `med-${medCount}`;
+            entry.innerHTML = `
+                <input type="text" name="medication_${medCount}" placeholder="Medication name (e.g., noradrenaline)">
+                <button type="button" class="remove-med" onclick="removeMedicationEntry(${medCount})">Remove</button>
+            `;
+            container.appendChild(entry);
+            medCount++;
+        }
+        
+        function removeMedicationEntry(id) {
+            const entry = document.getElementById(`med-${id}`);
+            if (entry) {
+                entry.remove();
+            }
+        }
+        
+        function convertDateTimeLocalToISO(dateTimeLocal) {
+            if (!dateTimeLocal) return null;
+            // Convert YYYY-MM-DDTHH:mm to ISO format
+            return dateTimeLocal + ':00';
+        }
+        
+        document.getElementById('sbtForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const outputSection = document.getElementById('outputSection');
+            const outputContent = document.getElementById('outputContent');
+            const loading = document.getElementById('loading');
+            
+            // Hide previous results
+            outputSection.classList.remove('show');
+            loading.classList.add('show');
+            
+            try {
+                // Collect form data
+                const formData = new FormData(e.target);
+                const data = {
+                    CPMRN: formData.get('cpmrn'),
+                    name: formData.get('name'),
+                    lastName: formData.get('lastName') || '',
+                    hospitalName: formData.get('hospitalName'),
+                    unitName: formData.get('unitName'),
+                    bedNo: formData.get('bedNo'),
+                    latestVital: {
+                        timestamp: convertDateTimeLocalToISO(formData.get('latestVitalTimestamp')),
+                        daysFiO2: parseFloat(formData.get('daysFiO2')),
+                        daysVentPEEP: parseFloat(formData.get('daysVentPEEP'))
+                    },
+                    vitals: [],
+                    medications: []
+                };
+                
+                // Collect vitals - iterate through all form entries
+                const vitalEntries = document.querySelectorAll('.vital-entry');
+                vitalEntries.forEach((entry, index) => {
+                    const timestamp = entry.querySelector(`input[name^="vital_timestamp_"]`)?.value;
+                    const breathSeq = entry.querySelector(`input[name^="vital_breath_"]`)?.value;
+                    const hr = entry.querySelector(`input[name^="vital_hr_"]`)?.value;
+                    
+                    if (timestamp) {
+                        const vital = {
+                            timestamp: convertDateTimeLocalToISO(timestamp)
+                        };
+                        if (breathSeq && breathSeq.trim()) vital.daysVentBreathSequence = breathSeq.trim();
+                        if (hr) vital.daysHR = parseFloat(hr);
+                        data.vitals.push(vital);
+                    }
+                });
+                
+                // Collect medications - iterate through all medication entries
+                const medEntries = document.querySelectorAll('.medication-entry');
+                medEntries.forEach((entry) => {
+                    const med = entry.querySelector('input[type="text"]')?.value;
+                    if (med && med.trim()) {
+                        data.medications.push(med.trim());
+                    }
+                });
+                
+                // Send to server
+                const response = await fetch('/check', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                loading.classList.remove('show');
+                outputSection.classList.add('show');
+                
+                if (response.ok) {
+                    if (result.message) {
+                        outputContent.innerHTML = `<div class="no-result-message">${result.message}</div>`;
+                    } else if (result.error) {
+                        outputContent.innerHTML = `<div class="error-message">Error: ${result.error}</div>`;
+                    } else {
+                        outputContent.innerHTML = `
+                            <div class="success-message">Patient is eligible for SBT!</div>
+                            <div class="output-json">${JSON.stringify(result, null, 2)}</div>
+                        `;
+                    }
+                } else {
+                    outputContent.innerHTML = `<div class="error-message">Error: ${result.error || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                loading.classList.remove('show');
+                outputSection.classList.add('show');
+                outputContent.innerHTML = `<div class="error-message">Error: ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>
